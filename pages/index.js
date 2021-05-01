@@ -3,6 +3,7 @@ import { Surface } from 'gl-react-dom'
 import { useTweaks, makeButton } from 'use-tweaks'
 
 import useTime from '../hooks/use-time'
+import useWindowSize from '../hooks/use-window-size'
 
 const shaders = Shaders.create({
   interference: {
@@ -18,9 +19,9 @@ void main() {
 
   for (int i = 0; i < 3; i++) {
     vec2 p = particles[i];
-    float d = smoothstep(0., 1., distance(p, uv) - .02);
+    float d = smoothstep(0., 1., distance(p, uv) + .1);
     sum += pow(d, .23) * (
-      // put some cool fancy random numbers here to make it look great
+      // put some random numbers to make it look fancy
       (cos(d * 38. + t / 600.) + 1.) * vec4(0.956862745, .0, 0.290196078, 1.) +
       (sin(d * 30. + t / 900. + .3) + 1.) * vec4(.0, 0.415686275, 0.956862745, 1.) +
       (sin(d * 18. + t / 1200. + .1) + 1.) * vec4(0.125490196, 0.835294118, 0.243137255, 1.)
@@ -40,10 +41,9 @@ void main() {
   },
 })
 
-const SIZE = 800
-
 export default function Page() {
   const [t, pause] = useTime()
+  const { width, height } = useWindowSize()
   const { x, y, speed } = useTweaks('Interference', {
     x: { value: 0.5, min: -0.5, max: 1.5 },
     y: { value: -0.3, min: -1, max: 0 },
@@ -51,26 +51,23 @@ export default function Page() {
     ...makeButton('Pause/Play', pause),
   })
 
+  if (!width || !height) return null
+
+  const size = Math.min(width, height)
+
   return (
-    <>
-      <Surface width={SIZE} height={SIZE}>
-        <Node
-          shader={shaders.interference}
-          uniforms={{
-            t,
-            particles: [
-              [x, (Math.sin((t * speed) / 3600) + 1) / 3.7 + y],
-              [0.495, -0],
-              [0.505, -0],
-            ],
-          }}
-        />
-      </Surface>
-      <style jsx global>{`
-        body {
-          margin: 0;
-        }
-      `}</style>
-    </>
+    <Surface width={size} height={size} pixelRatio={1}>
+      <Node
+        shader={shaders.interference}
+        uniforms={{
+          t,
+          particles: [
+            [x, (Math.sin((t * speed) / 3600) + 1) / 3.7 + y],
+            [0.495, -0],
+            [0.505, -0],
+          ],
+        }}
+      />
+    </Surface>
   )
 }

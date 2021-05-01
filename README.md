@@ -1,4 +1,4 @@
-# cc
+# CC
 
 Shu's [Creative Coding](https://works.shud.in/creative-coding) template.
 
@@ -21,3 +21,4 @@ npm run dev
 ```
 
 Then open localhost:3000.
+
